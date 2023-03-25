@@ -13,6 +13,8 @@ use web_sys::*;
 use yew::html::Scope;
 use yew::prelude::*;
 
+use crate::components::column_selector::{EmptyColumn, InPlaceColumn};
+use crate::custom_elements::ColumnDropDownElement;
 use crate::dragdrop::*;
 
 /// Must be implemented by `Properties` of children of `DragDropList`, returning
@@ -26,6 +28,7 @@ pub trait DragContext<T> {
     fn close(index: usize) -> T;
     fn dragleave() -> T;
     fn dragenter(index: usize) -> T;
+    fn new(col: InPlaceColumn) -> T;
 }
 
 #[derive(Properties, Derivative)]
@@ -39,6 +42,7 @@ where
     pub parent: Scope<T>,
     pub dragdrop: DragDrop,
     pub name: &'static str,
+    pub column_dropdown: ColumnDropDownElement,
     pub children: ChildrenWithProps<U>,
 
     #[prop_or_default]
@@ -265,6 +269,9 @@ where
                 .collect::<Html>()
         };
 
+        let column_dropdown = ctx.props().column_dropdown.clone();
+        // let on_select = V::new(ctx.props().on_select.clone();
+        let on_select = ctx.props().parent.callback(V::new);
         html! {
             <div ref={ &self.elem } class="rrow">
                 <div
@@ -279,10 +286,7 @@ where
                         <ul class="psp-text-field__input" for={ ctx.props().name }>
                             { columns_html }
                             if ctx.props().is_dragover.is_none() {
-                                <div class="pivot-column column-empty">
-                                    <div class="pivot-column-draggable" >
-                                    </div>
-                                </div>
+                                <EmptyColumn { column_dropdown } { on_select } />
                             }
                         </ul>
                         <label class="pivot-selector-label" for={ ctx.props().name }></label>
